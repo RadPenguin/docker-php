@@ -24,6 +24,7 @@ RUN apt-get update -qq && \
   apt-get -yqq install \
     libzip-dev && \
  docker-php-ext-install -j$(nproc) \
+    bcmath \
     mysqli \
     zip
 
