@@ -19,6 +19,14 @@ RUN apt-get update -qq && \
 # Set the timezone                    
 RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime
 
+# Install Imagemagick dependencies
+RUN apt-get update -qq && \
+  apt-get install -yqq \
+    imagemagick \
+    libmagick++-dev && \
+  pecl install imagick && \
+  docker-php-ext-enable imagick
+
 # Configure PHP
 RUN apt-get update -qq && \
   apt-get -yqq install \
