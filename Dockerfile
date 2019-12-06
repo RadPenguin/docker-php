@@ -19,14 +19,6 @@ RUN apt-get update -qq && \
 # Set the timezone                    
 RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime
 
-# Install Imagemagick dependencies
-RUN apt-get update -qq && \
-  apt-get install -yqq \
-    imagemagick \
-    libmagick++-dev && \
-  pecl install imagick && \
-  docker-php-ext-enable imagick
-
 # Configure PHP
 RUN apt-get update -qq && \
   apt-get -yqq install \
@@ -36,8 +28,20 @@ RUN apt-get update -qq && \
     mysqli \
     zip
 
+# Install Imagemagick
+RUN apt-get update -qq && \
+  apt-get install -yqq \
+    imagemagick \
+    libmagick++-dev && \
+  pecl install imagick && \
+  docker-php-ext-enable imagick
+
 # Install composer
-RUN curl --silent https://getcomposer.org/composer.phar -o /usr/local/bin/composer && chmod 755 /usr/local/bin/composer
+RUN curl --silent https://getcomposer.org/composer.phar -o /usr/local/bin/composer && \
+  chmod 755 /usr/local/bin/composer
 
 # Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get clean && rm -rf \
+  /tmp/* \
+  /var/lib/apt/lists/* \
+  /var/tmp/*
