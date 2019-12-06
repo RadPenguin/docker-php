@@ -36,9 +36,17 @@ RUN apt-get update -qq && \
   pecl install imagick && \
   docker-php-ext-enable imagick
 
-# Install composer
+# Install Composer
 RUN curl --silent https://getcomposer.org/composer.phar -o /usr/local/bin/composer && \
   chmod 755 /usr/local/bin/composer
+
+# Install Yarn
+RUN apt-get update -qq && \
+  apt-get install -yqq gnupg && \
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+  echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+  apt update -qq && \
+  apt install -yqq yarn
 
 # Clean up
 RUN apt-get clean && rm -rf \
