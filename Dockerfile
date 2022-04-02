@@ -1,4 +1,4 @@
-FROM php:7-cli
+FROM php:8-cli
 
 ARG BUILD_DATE
 ARG VERSION
@@ -11,8 +11,8 @@ ENV TZ="America/Edmonton"
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_MEMORY_LIMIT -1
-ENV IMAGEMAGICK_VERSION 3.4.4
-ENV NODE_VERSION 14.18.0
+ENV IMAGEMAGICK_VERSION 3.7.0
+ENV NODE_VERSION 16.14.0
 
 # Install dependencies.
 RUN apt-get update -qq && \
@@ -47,18 +47,15 @@ RUN mv /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 RUN mkdir -p /var/www/.xdebug
 ADD ./php.ini /usr/local/etc/php/conf.d/00-custom.ini
 
-# Install mcrypt.
-RUN apt-get -qq update && apt-get install -yqq --no-install-recommends libltdl7 libmcrypt-dev && \
-  yes '' | pecl install mcrypt && \
-  docker-php-ext-enable mcrypt
-
 # Install GD.
 RUN apt-get -qq update && apt-get install -yqq --no-install-recommends \
         libfreetype6-dev \
         libjpeg62-turbo \
         libjpeg62-turbo-dev \
         libpng-dev && \
-  docker-php-ext-configure gd && \
+  docker-php-ext-configure gd \
+      --with-freetype=/usr/include/ \
+      --with-jpeg=/usr/include/ && \
   docker-php-ext-install -j$(nproc) gd
 
 # Compile Imagemagick
@@ -96,6 +93,15 @@ RUN mkdir -p /usr/local/bin/node && \
   cd /usr/local/bin/node && \
   curl --silent https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz | tar Jx --strip-components=1
 RUN echo "export PATH=\$PATH:/usr/local/bin/node/bin" >> /etc/bash.bashrc
+
+# Install Symfony CLI.
+RUN curl -sS https://get.symfony.com/cli/installer | bash && \
+  echo "export PATH=\$PATH:\$HOME/.symfony/bin" >> /etc/bash.bashrc
+
+# Install foreman
+RUN apt-get update && \
+    apt-get install -yqq ruby && \
+    gem install foreman
 
 # Clean up packages.
 RUN apt-get autoremove -yqq \
